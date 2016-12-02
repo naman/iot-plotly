@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>SSIOT</title>
+</head>
+
+<body>
+    <div id="testplot">
+    </div>
+
+    <h3>Latest Sensor Value:</h3>
+    <div id="change">0</div>
+    <script src="http://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <script>
+        var array = [];
+        for (var i = 0; i < 10; i++)
+            array[i] = 0;
+
+        function fetchSensorValue(url) {
+            $.get(url, function(data) {
+                var val = $(data).find('h3').text();
+                var v = document.getElementById("change");
+                v.innerHTML = val;
+            });
+        }
+
+        function sleep(milliseconds) {
+            //taken from stackoverflow
+            var start = new Date().getTime();
+            for (var i = 0; i < 1000000000; i++) {
+                if ((new Date().getTime() - start) > milliseconds) {
+                    break;
+                }
+            }
+        }
+
+        var url = "http://devices.webofthings.io/pi/sensors/temperature/";
+
+        for (var i = 0; i < 10; i++) {
+            sleep(1000);
+            fetchSensorValue(url);
+            // setTimeout(fetchSensorValue(url), 1000); //doesn't really sleep.
+        }
+
+        setTimeout(function() {
+            for (var i = 0; i < 10; i++) {
+                var v = document.getElementById("change");
+                array[i] = v.innerHTML;
+                // console.log(v.innerHTML);
+            }
+
+            testplot = document.getElementById('testplot');
+
+            var layout = {
+                title: 'Raspberry Pi: Temperature over Time duration',
+                xaxis: {
+                    title: 'time (in seconds)'
+                },
+                yaxis: {
+                    title: 'temperature (in celsius)'
+                },
+            };
+
+            var data = [{
+                x: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                y: array
+            }];
+            Plotly.plot(testplot, data, layout);
+        }, 1000);
+    </script>
+</body>
+
+</html>
